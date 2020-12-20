@@ -1,0 +1,201 @@
+html * {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  background-color: black;
+  color: white;
+  font-size: 24px;
+  font-family: "Times New Roman", serif;
+  overflow: auto;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+}
+
+header {
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#buttons {
+  padding-left: 10px;
+}
+
+#mapNameOut {
+  padding-right: 10px;
+  color: gray;
+}
+
+.menu {
+  padding: 0 5px;
+  border: none;
+  font-family: "Caveat", cursive;
+}
+
+.menu:hover {
+  font-style: italic;
+}
+
+#mainButton {
+  background-image: url("img/favicon-32x32.png");
+  background-repeat: no-repeat;
+  width: 32px;
+  height: 32px;
+  padding: 9px;
+}
+
+#mainButton:hover {
+  -webkit-transform: rotate(10deg);
+  transform: rotate(10deg);
+}
+
+section {
+  position: absolute;
+  top: 50px;
+  width: 20%;
+  height: 80%;
+  margin: 8% 2%;
+  margin-top: 0;
+  padding: 2%;
+  float: center;
+  border-right: 1px solid rgba(100, 100, 100, 0.5);
+}
+
+h1 {
+  margin-top: 5%;
+  font-family: "Times New Roman", serif;
+  font-size: 36px;
+}
+
+h2 {
+  margin-bottom: 5%;
+  font-weight: normal;
+  font-family: "Caveat", cursive;
+  color: #fddb3a;
+}
+
+section input,
+section select {
+  display: block;
+  margin: 10px auto;
+  width: 80%;
+  height: 36px;
+  background-color: white;
+  color: black;
+  border: 1px solid gray;
+  font-size: 18px;
+  text-align: center;
+  text-align-last: center;
+}
+
+section fieldset {
+  margin: 20px 0;
+  padding: 20px 0;
+}
+
+section fieldset legend {
+  padding: 0 10px;
+  font-family: "Times New Roman", serif;
+  font-size: 18px;
+}
+
+section fieldset label {
+  font-family: "Times New Roman", serif;
+  font-size: 16px;
+}
+
+#main div {
+  padding: 20px;
+}
+
+#main div p {
+  line-height: 1.5em;
+  font-size: 1em;
+  font-family: "Caveat", cursive;
+  border: none;
+}
+
+footer {
+  padding-top: 10%;
+}
+
+footer address a {
+  font-size: 18px;
+  color: #fddb3a;
+  text-decoration: none;
+}
+
+footer address a:hover {
+  border-bottom: 1px solid #fddb3a;
+}
+
+.modify {
+  margin: 0 20px;
+  border: none;
+  font-family: "Caveat", cursive;
+}
+
+.modify:hover {
+  font-style: italic;
+}
+
+#my #selectDiariesIsle {
+  margin-top: 20px;
+}
+
+#my label {
+  padding-left: 10px;
+  text-align: left;
+  display: inline-block;
+  width: 70%;
+  vertical-align: middle;
+}
+
+#my label input[type=checkbox] {
+  display: inline-block;
+  width: 20px;
+  height: 18px;
+}
+
+#my label .type {
+  text-align: left;
+  display: inline-block;
+  width: 70px;
+  font-size: 18px;
+}
+
+#my label .value {
+  display: inline-block;
+  font-size: 18px;
+}
+
+#islands .checkbox {
+  display: inline-block;
+  width: 70%;
+  font-size: 18px;
+}
+
+#islands input[type=checkbox] {
+  width: 20px;
+  height: 18px;
+}
+
+#diaries textarea {
+  margin: 10px auto;
+  width: 80%;
+  font-size: 18px;
+}
+
+.submit {
+  margin-top: 30px;
+  width: 50%;
+  font-family: "Caveat", cursive;
+  font-weight: bold;
+  background-color: #fddb3a;
+}
+
+/*# sourceMappingURL=main.css.map */

@@ -1,0 +1,208 @@
+$Times: "Times New Roman",
+serif;
+$Verdana: "Verdana",
+sans-serif;
+$Caveat: "Caveat",
+cursive;
+$yellow: #fddb3a;
+$small: 18px;
+$midium: 24px;
+$large: 36px;
+
+html * {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background-color: black;
+    color: white;
+    font-size: $midium;
+    font-family: $Times;
+    overflow: auto;
+}
+
+#mapNameOut {
+    margin-top: 1%;
+    margin-right: 1%;
+    float: right;
+    color: gray;
+}
+
+.menu {
+    margin-top: 1%;
+    margin-left: 1%;
+    padding: 0 1px;
+    float: left;
+    border: none;
+    font-family: $Caveat;
+
+    &:hover {
+        font-style: italic;
+    }
+}
+
+#m_button {
+    background-image: url("img/favicon-32x32.png");
+    background-repeat: no-repeat;
+    left: 10px;
+    top: 15px;
+    width: 32px;
+    height: 32px;
+}
+
+#m_button:hover {
+    transform: rotate(10deg);
+}
+
+section {
+    position: absolute;
+    width: 20%;
+    height: 80%;
+    margin: 2%;
+    margin-top: 0;
+    margin-bottom: 10%;
+    padding: 2%;
+    float: center;
+    border-right: 1px solid rgba(100, 100, 100, 0.5);
+}
+
+h1 {
+    margin-top: 5%;
+    font-family: $Times;
+    font-size: $large;
+}
+
+h2 {
+    margin-bottom: 5%;
+    font-weight: normal;
+    font-family: $Caveat;
+    color: $yellow;
+}
+
+section {
+
+    input,
+    select {
+        display: block;
+        margin: 10px auto;
+        width: 80%;
+        height: $large;
+        background-color: white;
+        color: black;
+        border: 1px solid gray;
+        font-size: $small;
+        text-align: center;
+        text-align-last: center;
+    }
+
+    fieldset {
+        margin: 20px 0;
+        padding: 20px 0;
+
+        legend {
+            padding: 0 10px;
+            font-family: $Times;
+            font-size: $small;
+        }
+    }
+}
+
+#main {
+    div {
+        padding: 20px;
+
+        p {
+            line-height: $midium * 2;
+            font-size: $midium;
+            font-family: $Caveat;
+            border: none;
+        }
+    }
+}
+
+#my, #islands {
+    .fix {
+        margin: 0 20px;
+        border: none;
+        font-family: $Caveat;
+
+        &:hover {
+            font-style: italic;
+        }
+    }
+}
+
+#my {
+    #selectDiariesIsle {
+        margin-top: 20px;
+    }
+
+    label {
+        padding-left: 10px;
+        text-align: left;
+        display: inline-block;
+        width: 70%;
+        vertical-align: middle;
+
+        input[type=checkbox] {
+            display: inline-block;
+            width: 20px;
+            height: $small;
+        }
+        
+        .type {
+            text-align: left;
+            display: inline-block;
+            width: 70px;
+            font-size: $small;
+        }
+        .value {
+            display: inline-block;
+            font-size: $small;
+        }
+    }
+}
+
+#resorces {
+    .checkbox {
+        display: inline-block;
+        width: 70%;
+        font-size: $small;
+    }
+
+    input[type=checkbox] {
+        width: 20px;
+        height: $small;
+    }
+}
+
+#diaries {
+    textarea {
+        margin: 10px auto;
+        width: 80%;
+        font-size: $small;
+    }
+}
+
+.submit {
+    margin-top: 30px;
+    width: 50%;
+    font-family: $Caveat;
+    font-weight: bold;
+    background-color: $yellow;
+}
+
+footer {
+    padding-top: 10%;
+
+    address {
+        a {
+            font-size: $small;
+            color: $yellow;
+            text-decoration: none;
+        }
+
+        a:hover {
+            border-bottom: 1px solid $yellow;
+        }
+    }
+}

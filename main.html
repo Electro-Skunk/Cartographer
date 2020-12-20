@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartographer</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./main.css">
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+    <script src="main.js"></script>
+</head>
+
+<body>
+    <header>
+        <div id="buttons">
+            <button id="mainButton" type="submit" class="menu"></button>
+            <button id="pathsButton" type="submit" class="menu">Paths</button>
+            <button id="islandsButton" type="submit" class="menu">Islands</button>
+            <button id="diariesButton" type="submit" class="menu">Diaries</button>
+        </div>
+        <div id="mapNameOut">#</div>
+    </header>
+
+    <section id="main" class="toggle">
+        <div>
+            <h1>Cartographer</h1>
+            <h2>for Stranded Deep</h2>
+        </div>
+        <div>
+            <p>Welcome, Survivors!</p>
+            <p>After experimental build (0.72.00) update, </p>
+            <p>we can explore BIG Stranded Deep world!</p>
+            <p>So we can stranding more! XD</p>
+            <p>To explore bigger world, I make this tool.</p>
+            <p>I hope it helps you to make your own map!</p>
+        </div>
+        <input type="text" id="mapNameIn" placeholder="Enter seed number or map name">
+        <footer>
+            <address>
+                <a href="https://electroskunk.tistory.com">by Electro Skunk</a>
+            </address>
+        </footer>
+    </section>
+
+    <section id="paths" class="toggle">
+        <form id="createNewCourse">
+            <fieldset>
+                <legend>Create new course</legend>
+                <select id="selectStartIsle" class="selectIsle" required>
+                    <option value="" disabled selected>Select start point</option>
+                </select>
+                <input id="newAngle" type="number" placeholder="angle" min="0" max="360" required>
+                <input id="newDistance" type="number" placeholder="distance (1 to 10)" min="1" max="10" required>
+                <label for="newIsleName">New island name</label>
+                <input id="newIsleName" type="text" placeholder="[A-Za-z0-9_ ]" pattern="[\w ]+"
+                    minlength="4" maxlength="30" size="30" autocomplete="off" required>
+                <input id="isleColor" type="color" value="#006600" required>
+                <input id="newCreate" class="submit" type="submit" value="CREATE">
+            </fieldset>
+        </form>
+    </section>
+
+    <section id="islands" class="toggle">
+        <fieldset>
+            <legend>Resorces</legend>
+            <select id="selectModifyIsle" class="selectIsle" required>
+                <option value="" disabled selected>Select Island</option>
+            </select>
+            <p>
+                <label for="log" class="checkbox">logs</label>
+                <input id="log" class="checkbox" type="checkbox">
+            </p>
+            <p>
+                <label for="coconuts" class="checkbox">coconuts</label>
+                <input id="coconuts" class="checkbox" type="checkbox">
+            </p>
+            <p>
+                <label for="palmLeaves" class="checkbox">palm leaves</label>
+                <input id="palmLeaves" class="checkbox" type="checkbox">
+            </p>
+            <p>
+                <label for="tools" class="checkbox">tools</label>
+                <input id="tools" class="checkbox" type="checkbox">
+            </p>
+            <p>
+                <label for="fruits" class="checkbox">fruits</label>
+                <input id="fruits" class="checkbox" type="checkbox">
+            </p>
+            <p>
+                <label for="herbs" class="checkbox">herbs</label>
+                <input id="herbs" class="checkbox" type="checkbox">
+            </p>
+            <p>
+                <label for="stones" class="checkbox">stones</label>
+                <input id="stones" class="checkbox" type="checkbox">
+            </p>
+            <p>
+                <label for="clays" class="checkbox">clays</label>
+                <input id="clays" class="checkbox" type="checkbox">
+            </p>
+            <p>
+                <label for="container" class="checkbox">container</label>
+                <input id="container" class="checkbox" type="checkbox">
+            </p>
+            <p>
+                <label for="treasure" class="checkbox">treasure</label>
+                <input id="treasure" class="checkbox" type="checkbox">
+            </p>
+            <input id="save" class="submit" type="submit" value="SAVE">
+        </fieldset>
+    </section>
+
+    <section id="diaries" class="toggle">
+        <fieldset>
+            <legend>Diaries</legend>
+            <input type="date">
+            <textarea id="diary" rows="19" required></textarea>
+            <input id="save" class="submit" type="submit" value="SAVE">
+        </fieldset>
+    </section>
+
+    <canvas id="canvas">
+        Canvas not supported
+    </canvas>
+</body>
+
+</html>
