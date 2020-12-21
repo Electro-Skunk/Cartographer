@@ -21,7 +21,6 @@
             <button id="checkButton" type="submit" class="menu">check</button>
             <button id="writeButton" type="submit" class="menu">write</button>
         </div>
-        <div id="mapNameOut">#</div>
     </header>
 
     <section id="main" class="toggle">
@@ -37,7 +36,9 @@
             <p>To explore bigger world, I make this tool.</p>
             <p>I hope it helps you to make your own map!</p>
         </div>
-        <input type="text" id="mapNameIn" placeholder="Enter seed number or map name">
+        <form>
+            <input id="mapImg" type="file" placeholder="Cartographer screenshot.jpg" accept="image/jpeg">
+        </form>
         <footer>
             <address>
                 <a href="https://electroskunk.tistory.com">by Electro Skunk</a>
@@ -53,13 +54,16 @@
                     <option value="" disabled selected>Select start point</option>
                 </select>
                 <input id="newAngle" type="number" placeholder="angle" min="0" max="360" required>
-                <input id="newDistance" type="number" placeholder="distance (1 to 10)" min="1" max="10" required>
+                <input id="newDistance" type="number" placeholder="distance" min="100" max="1000" required>
                 <label for="newIsleName">New island name</label>
                 <input id="newIsleName" type="text" placeholder="[A-Za-z0-9_ ]" pattern="[\w ]+"
                     minlength="4" maxlength="30" size="30" autocomplete="off" required>
                 <input id="isleColor" type="color" value="#006600" required>
                 <input id="newCreate" class="submit" type="submit" value="CREATE">
             </fieldset>
+            <select id="selectCourse" class="selectCourse">
+                <option value="" disabled selected>Select course</option>
+            </select>
         </form>
     </section>
 
@@ -123,6 +127,9 @@
     </section>
 
     <canvas id="canvas">
+        Canvas not supported
+    </canvas>
+    <canvas id="imgCanvas">
         Canvas not supported
     </canvas>
 </body>

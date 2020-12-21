@@ -4,9 +4,19 @@ window.onload = function () {
     //python -m http.server
     //http://127.0.0.1:8000/main.html
 
-    // 캔버스 정의
+    // [main themes]
+    // {sub themes}
+    // notes
+
+
+    // [canvas]
+
+    // {define canvas}
+    const imgCanvas = document.getElementById("imgCanvas");
+    imgCanvas.style.display = "none";
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
+    ctx.globalCompositeOperation = "source-over";
     const canvasWidth = document.documentElement.clientWidth;
     const canvasHeight = document.documentElement.clientHeight - 56;
     canvas.width = canvasWidth;
@@ -19,15 +29,30 @@ window.onload = function () {
     ctx.fillStyle = "white";
     ctx.lineWidth = 1;
 
-    // 배경화면 하단 아래 방위 표시
-    const compassImg = new Image();
-    compassImg.onload = function () {
-        ctx.drawImage(compassImg, canvasWidth / 2 - 103, canvasHeight / 2 - 100, 100, 100);
+    // {background img - user screenshot}
+    function imgStore(img) {
+        const imgCtx = imgCanvas.getContext("2d");
+        imgCanvas.width = img.width;
+        imgCanvas.height = img.height;
+        imgCtx.drawImage(img, 0, 0);
+        let dataURL = imgCanvas.toDataURL("img/jpeg");
+        localStorage.setItem("map", dataURL);
     }
-    compassImg.src = "img/compass.png";
 
+    function imgResizing(img) {
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+        const scaleX = canvas.width / imgWidth;
+        const scaleY = canvas.height / imgHeight;
+        let scale = (scaleX < scaleY) ? scaleX : scaleY;
+        if (scale > 1) {
+            scale = 1;
+        }
+        img.width = scale * imgWidth;
+        img.height = scale * imgHeight;
+    }
 
-    // 캔버스에서 해도 그릴 때 사용하는 함수들
+    // {canvas drawing functions}
     function toRadian(degree) {
         degree -= 90;
         degree *= Math.PI / 180;
@@ -45,7 +70,7 @@ window.onload = function () {
     }
 
     class Island {
-        constructor(x = 0, y = 0, text = "text", color = "green") {
+        constructor(x, y, text, color) {
             this.x = x;
             this.y = y;
             this.text = text;
@@ -134,108 +159,135 @@ window.onload = function () {
     let islands = [];
     let courses = [];
 
+    // localStorage.removeItem("islands");
+    // localStorage.removeItem("courses");
+    // localStorage.removeItem("map");
+    console.log(localStorage);
 
-    // 쿠키 가져와서 전부 그리기
-    (function loadFromCookies() {
-        // islands
-        let regExp = new RegExp("islands=(\\[{\\S+}\\])", "g");
-        let cookie = document.cookie.replace(regExp, "$1");
+    // [run once for every window.onload]
 
-        console.log("document.cookie =", document.cookie);
-        console.log("cookie =", cookie);
-
-        if (cookie == null || cookie.length == 0) {
-            let startIsle = new Island(0, 0, "START", "green");
-            islands.push(startIsle);
-            document.cookie = "islands=" + JSON.stringify(islands);
-            cookie = document.cookie.replace(regExp, "$1");
+    (function loadFromStorage() {
+        //background map
+        const map = localStorage.getItem("map");
+        if (map != null) {
+            const img = new Image();
+            img.onload = function () {
+                imgResizing(img);
+                ctx.drawImage(img, -(img.width / 2), -(img.height / 2), img.width, img.height);
+            }
+            img.src = map;
         }
-        islands = JSON.parse(cookie);
+
+        // islands
+        islands = localStorage.getItem("islands");
+        islands = JSON.parse(islands);
+
+        if (islands == null || islands.length == 0) {
+            let startIsle = new Island(0, 0, "START", "green");
+            islands = [];
+            islands.push(startIsle);
+            localStorage.setItem("islands", JSON.stringify(islands));
+        }
+
         islands = islands.map(isle => Object.assign(new Island(), isle));
 
         // courses
-        regExp = new RegExp("courses=[{\S+}]", "g");
-        cookie = document.cookie.match(regExp);
+        courses = localStorage.getItem("courses");
+        courses = JSON.parse(courses);
 
-        if (cookie != null) {
-            courses = JSON.parse(cookie);
+        if (courses != null) {
             courses = courses.map(course => Object.assign(new Course(), course));
+        } else {
+            courses = [];
         }
-
-        console.log("islands =", islands);
-        console.log("courses =", courses);
     }());
 
     (function drawAll() {
+        // background map
+        // draw when loaded
+
+        // islands
         islands.forEach(isle => {
             isle.draw();
-            console.log("isle =", isle);
 
             const selectIsle = document.getElementsByClassName("selectIsle");
-            console.log("selectIsle =", selectIsle);
-            [...selectIsle].forEach(select => {
+            for (let select of selectIsle) {
                 const option = document.createElement("option");
-                option.value = `${isle.x} ${isle.y} ${isle.text} ${isle.color}`;
+                option.value = JSON.stringify(isle);
                 option.innerHTML = isle.text;
                 select.appendChild(option);
-            });
+            }
         });
 
-        [...courses].forEach(course => {
-            course.draw();
+        if (courses != null) {
+            courses.forEach(course => {
+                course.draw();
 
-            const selectCourse = document.getElementsByClassName("selectCourse");
-            [...selectCourse].forEach(select => {
-                const option = document.createElement("option");
-                option.value = `${degree} ${startX} ${startY} ${distance} ${departure} ${destination}`;
-                option.innerHTML = `${departure} to ${destination}`;
-                select.appendChild(option);
+                const selectCourse = document.getElementsByClassName("selectCourse");
+                for (let select of selectCourse) {
+                    const option = document.createElement("option");
+                    option.value = JSON.stringify(course);
+                    option.innerHTML = `${course.departure} to ${course.destination}`;
+                    select.appendChild(option);
+                };
             });
-        });
+        }
     }());
 
-    // 쿠키 지우기
-    function deleteCookie(name) {
-        document.cookie = name + '=; expires=Thu, 01 Jan 1999 00:00:10 GMT;';
-    }
-    deleteCookie("islands");
-    deleteCookie("courses");
 
-    // html 버튼 조작 시 발생하는 이벤트들
+    // [html button events]
 
-    // create new course submit
+    // {get user screenshot, set as canvas background}
+    const mapImg = document.getElementById("mapImg");
+    mapImg.addEventListener("change", function (e) {
+        if (mapImg.files && mapImg.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    imgStore(img);
+                    imgResizing(img);
+                    window.location.reload();
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0])
+        } else {
+            console.log("file didn't seleted")
+        }
+    }, false);
+
+    // {create new course submit}
     const createNewCourse = document.getElementById("createNewCourse");
     createNewCourse.addEventListener("submit", function (e) {
         e.preventDefault();
 
-        const startIsle = document.getElementById("selectStartIsle").value.split(" ");
-        const startX = parseInt(startIsle[0]);
-        const startY = parseInt(startIsle[1]);
-        const startIsleName = parseInt(startIsle[2]);
+        let startIsle = document.getElementById("selectStartIsle").value;
+        console.log(startIsle);
+        startIsle = JSON.parse(startIsle);
+        console.log(startIsle);
+        startIsle = Object.assign(new Island(), startIsle);
+        console.log(startIsle);
         const newIsleName = document.getElementById("newIsleName").value;
         const newIsleColor = document.getElementById("isleColor").value;
         const degree = parseInt(document.getElementById("newAngle").value);
-        const distance = parseInt(document.getElementById("newDistance").value) * 100;
-        const x = getXY(degree, startX, startY, distance).x;
-        const y = getXY(degree, startX, startY, distance).y;
+        const distance = parseInt(document.getElementById("newDistance").value);
+        const x = getXY(degree, startIsle.x, startIsle.y, distance).x;
+        console.log(degree, startIsle.x, startIsle.y, distance);
+        console.log(x);
+        const y = getXY(degree, startIsle.x, startIsle.y, distance).y;
+        console.log(y);
 
         const newIsle = new Island(x, y, newIsleName, newIsleColor);
-        const newCourse = new Course(degree, startX, startY, distance, startIsleName, newIsleName);
+        const newCourse = new Course(degree, startIsle.x, startIsle.y, distance, startIsle.text, newIsleName);
         islands.push(newIsle);
         courses.push(newCourse);
-        document.cookie = "islands=" + JSON.stringify(islands);
-        document.cookie = "courses=" + JSON.stringify(courses);
+        localStorage.setItem("islands", JSON.stringify(islands));
+        localStorage.setItem("courses", JSON.stringify(courses));
+        window.location.reload()
     })
 
-
-    // map 이름 또는 seed 번호 출력
-    const mapNameIn = document.getElementById("mapNameIn");
-    mapNameIn.addEventListener("change", function () {
-        const mapNameOut = document.getElementById("mapNameOut");
-        mapNameOut.innerHTML = "#" + mapNameIn.value;
-    }, false);
-
-    // toggle
+    // {toggle}
     const main = document.getElementById("main");
     const draw = document.getElementById("draw");
     const check = document.getElementById("check");

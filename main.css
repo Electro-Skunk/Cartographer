@@ -25,11 +25,6 @@ header {
   padding-left: 10px;
 }
 
-#mapNameOut {
-  padding-right: 10px;
-  color: gray;
-}
-
 .menu {
   padding: 0 5px;
   border: none;
@@ -90,6 +85,12 @@ section select {
   font-size: 18px;
   text-align: center;
   text-align-last: center;
+}
+
+section input[type="file"] {
+  font-size: 16px;
+  width: 100%;
+  height: 100%;
 }
 
 section fieldset {
@@ -167,5 +168,6 @@ footer address a:hover {
   font-weight: bold;
   background-color: #fddb3a;
 }
+
 
 /*# sourceMappingURL=main.css.map */
