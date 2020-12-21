@@ -1,6 +1,6 @@
 window.onload = function () {
 
-    //cd C:\Users\osooni\Documents\Coding\GitHub\Mapping-Deep
+    //cd C:\Users\osooni\Documents\Coding\GitHub\Cartographer
     //python -m http.server
     //http://127.0.0.1:8000/main.html
 
@@ -44,137 +44,162 @@ window.onload = function () {
         };
     }
 
-    function drawIsland(ctx, x, y, text, color = "green") {
-        // draw circle
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-        ctx.beginPath();
-        ctx.arc(x, y, 5, toRadian(0), toRadian(360));
-        ctx.fill();
+    class Island {
+        constructor(x = 0, y = 0, text = "text", color = "green") {
+            this.x = x;
+            this.y = y;
+            this.text = text;
+            this.color = color;
+        }
+        draw() {
+            // draw circle
+            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 5, toRadian(0), toRadian(360));
+            ctx.fill();
 
-        //draw name
-        ctx.fillStyle = color;
-        ctx.textBaseline = "bottom";
-        ctx.font = `bold ${fontSize}px Arial`;
-        ctx.fillText(text, x, y - 5);
+            //draw name
+            ctx.fillStyle = this.color;
+            ctx.textBaseline = "bottom";
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.fillText(this.text, this.x, this.y - 5);
 
-        //draw coordinate
-        ctx.fillStyle = "white";
-        ctx.textBaseline = "top";
-        const coordinate = "(" + x + ", " + y + ")";
-        ctx.font = `normal ${fontSize}px Arial`;
-        ctx.fillText(coordinate, x, y + 5);
+            //draw coordinate
+            ctx.fillStyle = "white";
+            ctx.textBaseline = "top";
+            const coordinate = "(" + this.x + ", " + this.y + ")";
+            ctx.font = `normal ${fontSize}px Arial`;
+            ctx.fillText(coordinate, this.x, this.y + 5);
+        }
     }
 
-    function drawPath(ctx, degree, start_x, start_y, distance) {
-
-        // draw line
-        ctx.strokeStyle = "white";
-        let x = getXY(degree, start_x, start_y, distance).x;
-        let y = getXY(degree, start_x, start_y, distance).y;
-        ctx.beginPath();
-        ctx.moveTo(start_x, start_y);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-
-        // draw angle sign
-        ctx.fillStyle = "white";
-        x = getXY(degree, start_x, start_y, distance / 2).x;
-        y = getXY(degree, start_x, start_y, distance / 2).y;
-
-        let degreeBack;
-        if (degree >= 180) {
-            degreeBack = degree - 180;
-        } else {
-            degreeBack = degree + 180;
+    class Course {
+        constructor(degree, startX, startY, distance, departure, destination) {
+            this.degree = degree;
+            this.startX = startX;
+            this.startY = startY;
+            this.distance = distance;
+            this.departure = departure;
+            this.destination = destination;
         }
 
-        let text1, text2;
-        if (x > start_x) {
-            text1 = `${degree} >`;
-            text2 = `${degreeBack} <`;
-        } else if (x < start_x) {
-            text1 = `${degree} <`;
-            text2 = `${degreeBack} >`;
-        } else if (y > start_y) {
-            text1 = `${degree} >`;
-            text2 = `${degreeBack} <`;
-        } else {
-            text1 = `${degree} <`;
-            text2 = `${degreeBack} >`;
-        }
+        draw() {
+            // draw line
+            ctx.strokeStyle = "white";
+            let x = getXY(this.degree, this.startX, this.startY, this.distance).x;
+            let y = getXY(this.degree, this.startX, this.startY, this.distance).y;
+            ctx.beginPath();
+            ctx.moveTo(this.startX, this.startY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
 
-        ctx.translate(x, y);
-        ctx.rotate(toRadian(Math.min(degree, degreeBack)));
-        ctx.textBaseline = "bottom";
-        ctx.fillText(text1, 0, 0);
-        ctx.textBaseline = "top";
-        ctx.fillText(text2, 0, 0);
-        ctx.rotate(-toRadian(Math.min(degree, degreeBack)));
-        ctx.translate(-x, -y);
+            // draw angle sign
+            ctx.fillStyle = "white";
+            x = getXY(this.degree, this.startX, this.startY, this.distance / 2).x;
+            y = getXY(this.degree, this.startX, this.startY, this.distance / 2).y;
+
+            let degreeBack;
+            if (this.degree >= 180) {
+                degreeBack = this.degree - 180;
+            } else {
+                degreeBack = this.degree + 180;
+            }
+
+            let text1, text2;
+            if (x > this.startX) {
+                text1 = `${this.degree} >`;
+                text2 = `${degreeBack} <`;
+            } else if (x < this.startX) {
+                text1 = `${this.degree} <`;
+                text2 = `${degreeBack} >`;
+            } else if (y > this.startY) {
+                text1 = `${this.degree} >`;
+                text2 = `${degreeBack} <`;
+            } else {
+                text1 = `${this.degree} <`;
+                text2 = `${degreeBack} >`;
+            }
+
+            ctx.translate(x, y);
+            ctx.rotate(toRadian(Math.min(this.degree, degreeBack)));
+            ctx.textBaseline = "bottom";
+            ctx.fillText(text1, 0, 0);
+            ctx.textBaseline = "top";
+            ctx.fillText(text2, 0, 0);
+            ctx.rotate(-toRadian(Math.min(this.degree, degreeBack)));
+            ctx.translate(-x, -y);
+        }
     }
 
-
-    console.log("document.cookie =", document.cookie);
+    let islands = [];
+    let courses = [];
 
 
     // 쿠키 가져와서 전부 그리기
-    function drawAll() {
-        let regExp = new RegExp("island_?([A-Za-z0-9_ ]+)=(-?\\d+) (-?\\d+) (#\\w+)", "g");
-        let cookies = document.cookie.match(regExp);
+    (function loadFromCookies() {
+        // islands
+        let regExp = new RegExp("islands=(\\[{\\S+}\\])", "g");
+        let cookie = document.cookie.replace(regExp, "$1");
 
-        if (cookies == null) {
-            document.cookie = "island_START=0 0 #FFFF00";
-            cookies = document.cookie.match(regExp);
+        console.log("document.cookie =", document.cookie);
+        console.log("cookie =", cookie);
+
+        if (cookie == null || cookie.length == 0) {
+            let startIsle = new Island(0, 0, "START", "green");
+            islands.push(startIsle);
+            document.cookie = "islands=" + JSON.stringify(islands);
+            cookie = document.cookie.replace(regExp, "$1");
+        }
+        islands = JSON.parse(cookie);
+        islands = islands.map(isle => Object.assign(new Island(), isle));
+
+        // courses
+        regExp = new RegExp("courses=[{\S+}]", "g");
+        cookie = document.cookie.match(regExp);
+
+        if (cookie != null) {
+            courses = JSON.parse(cookie);
+            courses = courses.map(course => Object.assign(new Course(), course));
         }
 
-        cookies.forEach(cookie => {
-            const text = cookie.replace(regExp, "$1");
-            const x = parseInt(cookie.replace(regExp, "$2"));
-            const y = parseInt(cookie.replace(regExp, "$3"));
-            const color = cookie.replace(regExp, "$4");
-            drawIsland(ctx, x, y, text, color);
+        console.log("islands =", islands);
+        console.log("courses =", courses);
+    }());
+
+    (function drawAll() {
+        islands.forEach(isle => {
+            isle.draw();
+            console.log("isle =", isle);
 
             const selectIsle = document.getElementsByClassName("selectIsle");
+            console.log("selectIsle =", selectIsle);
             [...selectIsle].forEach(select => {
                 const option = document.createElement("option");
-                option.value = `${text} ${x} ${y}`;
-                option.innerHTML = text;
+                option.value = `${isle.x} ${isle.y} ${isle.text} ${isle.color}`;
+                option.innerHTML = isle.text;
                 select.appendChild(option);
             });
         });
 
-        regExp = new RegExp("path_?([A-Za-z0-9_ ]+)-([A-Za-z0-9_ ]+)=(\\d+) (-?\\d+) (-?\\d+) (\\d+)", "g");
-        cookies = document.cookie.match(regExp);
+        [...courses].forEach(course => {
+            course.draw();
 
-        if (cookies != null) {
-            cookies.forEach(cookie => {
-                const departure = cookie.replace(regExp, "$1");
-                const destination = cookie.replace(regExp, "$2");
-                const degree = parseInt(cookie.replace(regExp, "$3"));
-                const start_x = parseInt(cookie.replace(regExp, "$4"));
-                const start_y = parseInt(cookie.replace(regExp, "$5"));
-                const distance = parseInt(cookie.replace(regExp, "$6")) * 100;
-                drawPath(ctx, degree, start_x, start_y, distance);
-
-                const selectPath = document.getElementsByClassName("selectPath");
-                [...selectPath].forEach(select => {
-                    const option = document.createElement("option");
-                    option.value = `${departure}-${destination} ${degree} ${start_x} ${start_y} ${distance}`;
-                    option.innerHTML = `${departure} > ${destination}`;
-                    select.appendChild(option);
-                });
+            const selectCourse = document.getElementsByClassName("selectCourse");
+            [...selectCourse].forEach(select => {
+                const option = document.createElement("option");
+                option.value = `${degree} ${startX} ${startY} ${distance} ${departure} ${destination}`;
+                option.innerHTML = `${departure} to ${destination}`;
+                select.appendChild(option);
             });
-        }
-    }
-    drawAll();
-
-
+        });
+    }());
 
     // 쿠키 지우기
     function deleteCookie(name) {
         document.cookie = name + '=; expires=Thu, 01 Jan 1999 00:00:10 GMT;';
     }
-
+    deleteCookie("islands");
+    deleteCookie("courses");
 
     // html 버튼 조작 시 발생하는 이벤트들
 
@@ -184,18 +209,22 @@ window.onload = function () {
         e.preventDefault();
 
         const startIsle = document.getElementById("selectStartIsle").value.split(" ");
-        const startIsleName = startIsle[0];
-        const start_x = parseInt(startIsle[1]);
-        const start_y = parseInt(startIsle[2]);
+        const startX = parseInt(startIsle[0]);
+        const startY = parseInt(startIsle[1]);
+        const startIsleName = parseInt(startIsle[2]);
         const newIsleName = document.getElementById("newIsleName").value;
-        const isleColor = document.getElementById("isleColor").value;
+        const newIsleColor = document.getElementById("isleColor").value;
         const degree = parseInt(document.getElementById("newAngle").value);
         const distance = parseInt(document.getElementById("newDistance").value) * 100;
-        const x = getXY(degree, start_x, start_y, distance).x;
-        const y = getXY(degree, start_x, start_y, distance).y;
+        const x = getXY(degree, startX, startY, distance).x;
+        const y = getXY(degree, startX, startY, distance).y;
 
-        document.cookie = `island_${newIsleName}=${x} ${y} ${isleColor}`;
-        document.cookie = `path_${startIsleName}-${newIsleName}=${degree} ${start_x} ${start_y} ${distance}`;
+        const newIsle = new Island(x, y, newIsleName, newIsleColor);
+        const newCourse = new Course(degree, startX, startY, distance, startIsleName, newIsleName);
+        islands.push(newIsle);
+        courses.push(newCourse);
+        document.cookie = "islands=" + JSON.stringify(islands);
+        document.cookie = "courses=" + JSON.stringify(courses);
     })
 
 
@@ -208,19 +237,19 @@ window.onload = function () {
 
     // toggle
     const main = document.getElementById("main");
-    const paths = document.getElementById("paths");
-    const islands = document.getElementById("islands");
-    const diaries = document.getElementById("diaries");
+    const draw = document.getElementById("draw");
+    const check = document.getElementById("check");
+    const write = document.getElementById("write");
     main.style.display = "block";
-    paths.style.display = "none";
-    islands.style.display = "none";
-    diaries.style.display = "none";
+    draw.style.display = "none";
+    check.style.display = "none";
+    write.style.display = "none";
 
     const mainButton = document.getElementById("mainButton");
     mainButton.addEventListener("click", function () {
-        paths.style.display = "none";
-        islands.style.display = "none";
-        diaries.style.display = "none";
+        draw.style.display = "none";
+        check.style.display = "none";
+        write.style.display = "none";
         if (main.style.display == "none") {
             main.style.display = "block";
         } else {
@@ -228,39 +257,39 @@ window.onload = function () {
         }
     }, false);
 
-    const pathsButton = document.getElementById("pathsButton");
-    pathsButton.addEventListener("click", function () {
+    const drawButton = document.getElementById("drawButton");
+    drawButton.addEventListener("click", function () {
         main.style.display = "none";
-        islands.style.display = "none";
-        diaries.style.display = "none";
-        if (paths.style.display == "none") {
-            paths.style.display = "block";
+        check.style.display = "none";
+        write.style.display = "none";
+        if (draw.style.display == "none") {
+            draw.style.display = "block";
         } else {
-            paths.style.display = "none";
+            draw.style.display = "none";
         }
     }, false);
 
-    const islandsButton = document.getElementById("islandsButton");
-    islandsButton.addEventListener("click", function () {
+    const checkButton = document.getElementById("checkButton");
+    checkButton.addEventListener("click", function () {
         main.style.display = "none";
-        paths.style.display = "none";
-        diaries.style.display = "none";
-        if (islands.style.display == "none") {
-            islands.style.display = "block";
+        draw.style.display = "none";
+        write.style.display = "none";
+        if (check.style.display == "none") {
+            check.style.display = "block";
         } else {
-            islands.style.display = "none";
+            check.style.display = "none";
         }
     }, false);
 
-    const diariesButton = document.getElementById("diariesButton");
-    diariesButton.addEventListener("click", function (e) {
+    const writeButton = document.getElementById("writeButton");
+    writeButton.addEventListener("click", function (e) {
         main.style.display = "none";
-        paths.style.display = "none";
-        islands.style.display = "none";
-        if (diaries.style.display == "none") {
-            diaries.style.display = "block";
+        draw.style.display = "none";
+        check.style.display = "none";
+        if (write.style.display == "none") {
+            write.style.display = "block";
         } else {
-            diaries.style.display = "none";
+            write.style.display = "none";
         }
     }, false);
 

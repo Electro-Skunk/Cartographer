@@ -143,48 +143,18 @@ footer address a:hover {
   font-style: italic;
 }
 
-#my #selectDiariesIsle {
-  margin-top: 20px;
-}
-
-#my label {
-  padding-left: 10px;
-  text-align: left;
-  display: inline-block;
-  width: 70%;
-  vertical-align: middle;
-}
-
-#my label input[type=checkbox] {
-  display: inline-block;
-  width: 20px;
-  height: 18px;
-}
-
-#my label .type {
-  text-align: left;
-  display: inline-block;
-  width: 70px;
-  font-size: 18px;
-}
-
-#my label .value {
-  display: inline-block;
-  font-size: 18px;
-}
-
-#islands .checkbox {
+#check .checkbox {
   display: inline-block;
   width: 70%;
   font-size: 18px;
 }
 
-#islands input[type=checkbox] {
+#check input[type=checkbox] {
   width: 20px;
   height: 18px;
 }
 
-#diaries textarea {
+#write textarea {
   margin: 10px auto;
   width: 80%;
   font-size: 18px;
