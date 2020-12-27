@@ -1,6 +1,27 @@
 window.onload = function () {
+
+    //cd C:\Users\osooni\Documents\Coding\GitHub\Cartographer
+    //python -m http.server
+    //http://127.0.0.1:8000/main.html
+
+    // [main themes]
+    // {sub themes}
+    // notes
+
+
+    // [canvas]
+
+    // {define canvas}
+    const imgCanvas = document.getElementById("imgCanvas");
+    const imgCtx = imgCanvas.getContext("2d");
+    // imgCanvas.style.display = "none";
+    imgCanvas.style.backgroundColor = "skyblue";
+
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
+
+    canvas.style.backgroundColor = "beige";
+    ctx.globalCompositeOperation = "source-over";
     const canvasWidth = document.documentElement.clientWidth;
     const canvasHeight = document.documentElement.clientHeight - 56;
     canvas.width = canvasWidth;
@@ -13,7 +34,42 @@ window.onload = function () {
     ctx.fillStyle = "white";
     ctx.lineWidth = 1;
 
-    // 캔버스에서 해도 그릴 때 사용하는 함수들
+    // {background img - user screenshot}
+    function imgResizing(img) {
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+        const scaleX = canvas.width / imgWidth;
+        const scaleY = canvas.height / imgHeight;
+        let scale = (scaleX < scaleY) ? scaleX : scaleY;
+        if (scale > 1) {
+            scale = 1;
+        }
+        img.width = scale * imgWidth;
+        img.height = scale * imgHeight;
+    }
+
+    function imgSlicing(img) {
+        const scale = img.width / img.height;
+        if (scale > 1.7) {
+            imgCtx.clearRect(0, 0, imgCanvas.width, imgCanvas.height);
+            imgCanvas.width = img.width;
+            imgCanvas.height = img.height;
+            imgCtx.drawImage(img, 0, 0);
+            let imgData = imgCtx.getImageData(img.width * 0.3, 0, img.width * 0.7, img.height);
+            imgCtx.clearRect(0, 0, imgCanvas.width, imgCanvas.height);
+            imgCanvas.width = imgData.width;
+            imgCanvas.height = imgData.height;
+            imgCtx.putImageData(imgData, 0, 0);
+        }
+    }
+
+    function imgStore() {
+        let dataURL = imgCanvas.toDataURL("img/jpeg");
+        localStorage.setItem("map", dataURL);
+    }
+
+
+    // {canvas drawing functions}
     function toRadian(degree) {
         degree -= 90;
         degree *= Math.PI / 180;
@@ -31,7 +87,7 @@ window.onload = function () {
     }
 
     class Island {
-        constructor(x = 0, y = 0, text = "text", color = "green") {
+        constructor(x, y, text, color) {
             this.x = x;
             this.y = y;
             this.text = text;
@@ -58,9 +114,6 @@ window.onload = function () {
             ctx.fillText(coordinate, this.x, this.y + 5);
         }
     }
-    let a = new Island();
-    a.draw();
-    console.log(a);
 
     class Course {
         constructor(degree, startX, startY, distance, departure, destination) {
@@ -72,111 +125,245 @@ window.onload = function () {
             this.destination = destination;
         }
 
-        draw(degree, startX, startY, distance) {
+        draw() {
             // draw line
             ctx.strokeStyle = "white";
-            let x = getXY(degree, startX, startY, distance).x;
-            let y = getXY(degree, startX, startY, distance).y;
+            let x = getXY(this.degree, this.startX, this.startY, this.distance).x;
+            let y = getXY(this.degree, this.startX, this.startY, this.distance).y;
             ctx.beginPath();
-            ctx.moveTo(startX, startY);
+            ctx.moveTo(this.startX, this.startY);
             ctx.lineTo(x, y);
             ctx.stroke();
 
             // draw angle sign
             ctx.fillStyle = "white";
-            x = getXY(degree, startX, startY, distance / 2).x;
-            y = getXY(degree, startX, startY, distance / 2).y;
+            x = getXY(this.degree, this.startX, this.startY, this.distance / 2).x;
+            y = getXY(this.degree, this.startX, this.startY, this.distance / 2).y;
 
             let degreeBack;
-            if (degree >= 180) {
-                degreeBack = degree - 180;
+            if (this.degree >= 180) {
+                degreeBack = this.degree - 180;
             } else {
-                degreeBack = degree + 180;
+                degreeBack = this.degree + 180;
             }
 
             let text1, text2;
-            if (x > startX) {
-                text1 = `${degree} >`;
+            if (x > this.startX) {
+                text1 = `${this.degree} >`;
                 text2 = `${degreeBack} <`;
-            } else if (x < startX) {
-                text1 = `${degree} <`;
+            } else if (x < this.startX) {
+                text1 = `${this.degree} <`;
                 text2 = `${degreeBack} >`;
-            } else if (y > startY) {
-                text1 = `${degree} >`;
+            } else if (y > this.startY) {
+                text1 = `${this.degree} >`;
                 text2 = `${degreeBack} <`;
             } else {
-                text1 = `${degree} <`;
+                text1 = `${this.degree} <`;
                 text2 = `${degreeBack} >`;
             }
 
             ctx.translate(x, y);
-            ctx.rotate(toRadian(Math.min(degree, degreeBack)));
+            ctx.rotate(toRadian(Math.min(this.degree, degreeBack)));
             ctx.textBaseline = "bottom";
             ctx.fillText(text1, 0, 0);
             ctx.textBaseline = "top";
             ctx.fillText(text2, 0, 0);
-            ctx.rotate(-toRadian(Math.min(degree, degreeBack)));
+            ctx.rotate(-toRadian(Math.min(this.degree, degreeBack)));
             ctx.translate(-x, -y);
         }
     }
 
     let islands = [];
     let courses = [];
+    const img = new Image();
+    const drawObjs = [];
 
-    (function loadFromCookies() {
-        let regExp = new RegExp("islands=(\\[{\\S+}\\])", "g");
-        console.log("document.cookie =", document.cookie);
-        let cookie = document.cookie.replace(regExp, "$1");
+    // localStorage.removeItem("islands");
+    // localStorage.removeItem("courses");
+    // localStorage.removeItem("map");
+    console.log(localStorage);
 
-        if (cookie == null || cookie.length == 0) {
-            let startIsle = new Island(0, 0, "START", "green");
-            islands.push(startIsle);
-            document.cookie = "islands=" + JSON.stringify(islands);
-            cookie = document.cookie.replace(regExp, "$1");
+    // [run once for every window.onload]
 
-            startIsle = new Island(100, 100, "another", "red");
-            islands.push(startIsle);
-            document.cookie = "islands=" + JSON.stringify(islands);
-            cookie = document.cookie.replace(regExp, "$1");
+    (function loadFromStorage() {
+        //background map
+        const map = localStorage.getItem("map");
+        if (map != null) {
+            img.src = map;
+            imgResizing(img)
+            drawObjs.push(img);
         }
-        console.log("cookie =", cookie);
-        islands = JSON.parse(cookie);
-        islands = islands.map(isle => Object.assign(new Island(), isle)); 
-        console.log(islands);
-    }());
-    
-    (function drawAll() {
+
+        // islands
+        islands = localStorage.getItem("islands");
+        islands = JSON.parse(islands);
+
+        if (islands == null || islands.length == 0) {
+            let startIsle = new Island(0, 0, "START", "green");
+            islands = [];
+            islands.push(startIsle);
+            localStorage.setItem("islands", JSON.stringify(islands));
+            drawObjs.push(startIsle);
+        }
+
+        islands = islands.map(isle => Object.assign(new Island(), isle));
         islands.forEach(isle => {
-            isle.draw();
+            drawObjs.push(isle);
 
             const selectIsle = document.getElementsByClassName("selectIsle");
-            console.log(selectIsle);
-            selectIsle.forEach(select => {
+            for (let select of selectIsle) {
                 const option = document.createElement("option");
-                option.value = `${isle.x} ${isle.y} ${isle.text} ${isle.color}`;
+                option.value = JSON.stringify(isle);
                 option.innerHTML = isle.text;
-                console.log(select);
                 select.appendChild(option);
-            });
+            }
         });
 
-        regExp = new RegExp("courses=[{\S+}]", "g");
-        cookie = document.cookie.match(regExp);
+        // courses
+        courses = localStorage.getItem("courses");
+        courses = JSON.parse(courses);
 
-        if (cookie != null) {
-            let array = JSON.parse(cookie);
-            courses = Object.assign(Course, ...array);
-            [...courses].forEach(course => {
-                course.draw();
+        if (courses != null) {
+            courses = courses.map(course => Object.assign(new Course(), course));
+            courses.forEach(course => {
+                drawObjs.push(course);
 
                 const selectCourse = document.getElementsByClassName("selectCourse");
-                [...selectCourse].forEach(select => {
+                for (let select of selectCourse) {
                     const option = document.createElement("option");
-                    option.value = `${degree} ${startX} ${startY} ${distance} ${departure} ${destination}`;
-                    option.innerHTML = `${departure} to ${destination}`;
+                    option.value = JSON.stringify(course);
+                    option.innerHTML = `${course.departure} to ${course.destination}`;
                     select.appendChild(option);
-                });
-            })
+                };
+            });
+        } else {
+            courses = [];
         }
     }());
+
+    (function drawAll() {
+        img.onload = function () {
+            drawObjs.forEach(obj => {
+                if (obj instanceof Island || obj instanceof Course) {
+                    obj.draw();
+                } else {
+                    ctx.drawImage(obj, -(obj.width / 2), -(obj.height / 2), obj.width, obj.height);
+                }
+            });
+        }
+    }());
+
+
+    // [html button events]
+
+    // {get user screenshot, set as canvas background}
+    const mapImg = document.getElementById("mapImg");
+    mapImg.addEventListener("change", function (e) {
+        if (mapImg.files && mapImg.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    imgResizing(img);
+                    imgSlicing(img);
+                    imgStore();
+                    window.location.reload();
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0])
+        } else {
+            console.log("file didn't seleted")
+        }
+    }, false);
+
+    // {create new course submit}
+    const createNewCourse = document.getElementById("createNewCourse");
+    createNewCourse.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        let startIsle = document.getElementById("selectStartIsle").value;
+        console.log(startIsle);
+        startIsle = JSON.parse(startIsle);
+        console.log(startIsle);
+        startIsle = Object.assign(new Island(), startIsle);
+        console.log(startIsle);
+        const newIsleName = document.getElementById("newIsleName").value;
+        const newIsleColor = document.getElementById("isleColor").value;
+        const degree = parseInt(document.getElementById("newAngle").value);
+        const distance = parseInt(document.getElementById("newDistance").value);
+        const x = getXY(degree, startIsle.x, startIsle.y, distance).x;
+        console.log(degree, startIsle.x, startIsle.y, distance);
+        console.log(x);
+        const y = getXY(degree, startIsle.x, startIsle.y, distance).y;
+        console.log(y);
+
+        const newIsle = new Island(x, y, newIsleName, newIsleColor);
+        const newCourse = new Course(degree, startIsle.x, startIsle.y, distance, startIsle.text, newIsleName);
+        islands.push(newIsle);
+        courses.push(newCourse);
+        localStorage.setItem("islands", JSON.stringify(islands));
+        localStorage.setItem("courses", JSON.stringify(courses));
+        window.location.reload();
+    })
+
+    // {toggle}
+    const main = document.getElementById("main");
+    const draw = document.getElementById("draw");
+    const check = document.getElementById("check");
+    const write = document.getElementById("write");
+    main.style.display = "block";
+    draw.style.display = "none";
+    check.style.display = "none";
+    write.style.display = "none";
+
+    const mainButton = document.getElementById("mainButton");
+    mainButton.addEventListener("click", function () {
+        draw.style.display = "none";
+        check.style.display = "none";
+        write.style.display = "none";
+        if (main.style.display == "none") {
+            main.style.display = "block";
+        } else {
+            main.style.display = "none";
+        }
+    }, false);
+
+    const drawButton = document.getElementById("drawButton");
+    drawButton.addEventListener("click", function () {
+        main.style.display = "none";
+        check.style.display = "none";
+        write.style.display = "none";
+        if (draw.style.display == "none") {
+            draw.style.display = "block";
+        } else {
+            draw.style.display = "none";
+        }
+    }, false);
+
+    const checkButton = document.getElementById("checkButton");
+    checkButton.addEventListener("click", function () {
+        main.style.display = "none";
+        draw.style.display = "none";
+        write.style.display = "none";
+        if (check.style.display == "none") {
+            check.style.display = "block";
+        } else {
+            check.style.display = "none";
+        }
+    }, false);
+
+    const writeButton = document.getElementById("writeButton");
+    writeButton.addEventListener("click", function (e) {
+        main.style.display = "none";
+        draw.style.display = "none";
+        check.style.display = "none";
+        if (write.style.display == "none") {
+            write.style.display = "block";
+        } else {
+            write.style.display = "none";
+        }
+    }, false);
+
+
 }

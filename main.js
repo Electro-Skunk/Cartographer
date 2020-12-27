@@ -30,20 +30,21 @@ window.onload = function () {
     ctx.lineWidth = 1;
 
     // {background img - user screenshot}
-    function imgStore(img) {
+    function storeImg(img) {
         const imgCtx = imgCanvas.getContext("2d");
         imgCanvas.width = img.width;
         imgCanvas.height = img.height;
         imgCtx.drawImage(img, 0, 0);
-        let dataURL = imgCanvas.toDataURL("img/jpeg");
+        const dataURL = imgCanvas.toDataURL("img/jpeg");
         localStorage.setItem("map", dataURL);
     }
 
-    function imgResizing(img) {
+    function resizeImg(img) {
         const imgWidth = img.width;
         const imgHeight = img.height;
         const scaleX = canvas.width / imgWidth;
         const scaleY = canvas.height / imgHeight;
+
         let scale = (scaleX < scaleY) ? scaleX : scaleY;
         if (scale > 1) {
             scale = 1;
@@ -52,17 +53,18 @@ window.onload = function () {
         img.height = scale * imgHeight;
     }
 
+
     // {canvas drawing functions}
     function toRadian(degree) {
-        degree -= 90;
-        degree *= Math.PI / 180;
-        return degree;
+        let radian = degree - 45;
+        radian *= Math.PI / 180;
+        return radian;
     }
 
     function getXY(degree, start_x, start_y, distance) {
-        radian = toRadian(degree);
-        const x = parseInt(start_x + distance * Math.cos(radian));
-        const y = parseInt(start_y + distance * Math.sin(radian));
+        const radian = toRadian(degree);
+        const x = start_x + distance * Math.cos(radian);
+        const y = start_y + distance * Math.sin(radian);
         return {
             x: x,
             y: y
@@ -87,12 +89,12 @@ window.onload = function () {
             ctx.fillStyle = this.color;
             ctx.textBaseline = "bottom";
             ctx.font = `bold ${fontSize}px Arial`;
-            ctx.fillText(this.text, this.x, this.y - 5);
+            ctx.fillText(this.text, parseInt(this.x), parseInt(this.y) - 5);
 
             //draw coordinate
             ctx.fillStyle = "white";
             ctx.textBaseline = "top";
-            const coordinate = "(" + this.x + ", " + this.y + ")";
+            const coordinate = "(" + parseInt(this.x) + ", " + parseInt(this.y) + ")";
             ctx.font = `normal ${fontSize}px Arial`;
             ctx.fillText(coordinate, this.x, this.y + 5);
         }
@@ -130,52 +132,62 @@ window.onload = function () {
                 degreeBack = this.degree + 180;
             }
 
-            let text1, text2;
-            if (x > this.startX) {
-                text1 = `${this.degree} >`;
-                text2 = `${degreeBack} <`;
-            } else if (x < this.startX) {
-                text1 = `${this.degree} <`;
-                text2 = `${degreeBack} >`;
-            } else if (y > this.startY) {
-                text1 = `${this.degree} >`;
-                text2 = `${degreeBack} <`;
+            let textDegree;
+            if (this.degree > 135 && this.degree < 180) {
+                textDegree = toRadian(Math.min(this.degree, degreeBack) - 180);
+            } else if (this.degree > 315 && this.degree < 360) {
+                textDegree = toRadian(Math.min(this.degree, degreeBack) - 180);
             } else {
-                text1 = `${this.degree} <`;
-                text2 = `${degreeBack} >`;
+                textDegree = toRadian(Math.min(this.degree, degreeBack));
+            }
+
+            let go, back;
+            if (x <= this.startX && y <= this.startY) {
+                go = `< ${this.degree}`;
+                back = `${degreeBack} >`;
+            } else if (x >= this.startX && y <= this.startY) {
+                go = `${this.degree} >`;
+                back = `< ${degreeBack}`;
+            } else if (x > this.startX && y > this.startY) {
+                go = `${this.degree} >`;
+                back = `< ${degreeBack}`;
+            } else {
+                go = `< ${this.degree}`;
+                back = `${degreeBack} >`;
             }
 
             ctx.translate(x, y);
-            ctx.rotate(toRadian(Math.min(this.degree, degreeBack)));
+            ctx.rotate(textDegree);
             ctx.textBaseline = "bottom";
-            ctx.fillText(text1, 0, 0);
+            ctx.fillText(go, 0, 0);
             ctx.textBaseline = "top";
-            ctx.fillText(text2, 0, 0);
-            ctx.rotate(-toRadian(Math.min(this.degree, degreeBack)));
+            ctx.fillText(back, 0, 0);
+            ctx.rotate(-textDegree);
             ctx.translate(-x, -y);
         }
     }
 
     let islands = [];
     let courses = [];
+    const img = new Image();
+    const drawObjs = [];
 
     // localStorage.removeItem("islands");
     // localStorage.removeItem("courses");
     // localStorage.removeItem("map");
     console.log(localStorage);
 
-    // [run once for every window.onload]
 
+    // [run once for every window.onload]
     (function loadFromStorage() {
+        console.log("loadFromSotrage");
         //background map
         const map = localStorage.getItem("map");
         if (map != null) {
-            const img = new Image();
-            img.onload = function () {
-                imgResizing(img);
-                ctx.drawImage(img, -(img.width / 2), -(img.height / 2), img.width, img.height);
-            }
             img.src = map;
+
+            resizeImg(img);
+            drawObjs.push(img);
         }
 
         // islands
@@ -183,32 +195,16 @@ window.onload = function () {
         islands = JSON.parse(islands);
 
         if (islands == null || islands.length == 0) {
-            let startIsle = new Island(0, 0, "START", "green");
+            const startIsle = new Island(0, 0, "START", "green");
             islands = [];
             islands.push(startIsle);
             localStorage.setItem("islands", JSON.stringify(islands));
+            drawObjs.push(startIsle);
         }
 
         islands = islands.map(isle => Object.assign(new Island(), isle));
-
-        // courses
-        courses = localStorage.getItem("courses");
-        courses = JSON.parse(courses);
-
-        if (courses != null) {
-            courses = courses.map(course => Object.assign(new Course(), course));
-        } else {
-            courses = [];
-        }
-    }());
-
-    (function drawAll() {
-        // background map
-        // draw when loaded
-
-        // islands
         islands.forEach(isle => {
-            isle.draw();
+            drawObjs.push(isle);
 
             const selectIsle = document.getElementsByClassName("selectIsle");
             for (let select of selectIsle) {
@@ -219,9 +215,14 @@ window.onload = function () {
             }
         });
 
+        // courses
+        courses = localStorage.getItem("courses");
+        courses = JSON.parse(courses);
+
         if (courses != null) {
+            courses = courses.map(course => Object.assign(new Course(), course));
             courses.forEach(course => {
-                course.draw();
+                drawObjs.push(course);
 
                 const selectCourse = document.getElementsByClassName("selectCourse");
                 for (let select of selectCourse) {
@@ -231,23 +232,48 @@ window.onload = function () {
                     select.appendChild(option);
                 };
             });
+        } else {
+            courses = [];
         }
+
+        console.log("loadFromSotrage=", drawObjs);
     }());
 
+    function drawAll() {
+        console.log("drawAll");
+        ctx.clearRect(-(canvasWidth / 2), -(canvasHeight / 2), canvasWidth / 2, canvasHeight / 2);
+        console.log("aaa forach");
+
+        drawObjs.forEach(obj => {
+            console.log("aaa", obj);
+            if (obj instanceof Island || obj instanceof Course) {
+                obj.draw();
+            } else {
+                ctx.drawImage(obj, -(obj.width / 2), -(obj.height / 2), obj.width, obj.height);
+            }
+        });
+    }
+
+    img.onload = function() {
+        drawAll();
+    }
 
     // [html button events]
 
     // {get user screenshot, set as canvas background}
     const mapImg = document.getElementById("mapImg");
     mapImg.addEventListener("change", function (e) {
+        console.log("input changed");
         if (mapImg.files && mapImg.files[0]) {
             const reader = new FileReader();
             reader.onload = function (e) {
+                console.log("reader onload");
                 const img = new Image();
                 img.onload = function () {
-                    imgStore(img);
-                    imgResizing(img);
-                    window.location.reload();
+                    console.log("img onload");
+                    storeImg(img);
+                    resizeImg(img);
+                    drawAll();
                 }
                 img.src = e.target.result;
             }
@@ -284,7 +310,7 @@ window.onload = function () {
         courses.push(newCourse);
         localStorage.setItem("islands", JSON.stringify(islands));
         localStorage.setItem("courses", JSON.stringify(courses));
-        window.location.reload()
+        window.location.reload();
     })
 
     // {toggle}

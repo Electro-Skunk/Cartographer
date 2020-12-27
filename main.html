@@ -37,7 +37,7 @@
             <p>I hope it helps you to make your own map!</p>
         </div>
         <form>
-            <input id="mapImg" type="file" placeholder="Cartographer screenshot.jpg" accept="image/jpeg">
+            <input id="mapImg" type="file" accept="image/jpeg">
         </form>
         <footer>
             <address>
@@ -47,9 +47,9 @@
     </section>
 
     <section id="draw" class="toggle">
+        <h2>Create new course</h2>
         <form id="createNewCourse">
             <fieldset>
-                <legend>Create new course</legend>
                 <select id="selectStartIsle" class="selectIsle" required>
                     <option value="" disabled selected>Select start point</option>
                 </select>
@@ -58,7 +58,7 @@
                 <label for="newIsleName">New island name</label>
                 <input id="newIsleName" type="text" placeholder="[A-Za-z0-9_ ]" pattern="[\w ]+"
                     minlength="4" maxlength="30" size="30" autocomplete="off" required>
-                <input id="isleColor" type="color" value="#006600" required>
+                <input id="isleColor" type="color" value="#006600">
                 <input id="newCreate" class="submit" type="submit" value="CREATE">
             </fieldset>
             <select id="selectCourse" class="selectCourse">
@@ -68,8 +68,8 @@
     </section>
 
     <section id="check" class="toggle">
+        <h2>Resorces</h2>
         <fieldset>
-            <legend>Resorces</legend>
             <select id="selectModifyIsle" class="selectIsle" required>
                 <option value="" disabled selected>Select Island</option>
             </select>
@@ -113,16 +113,16 @@
                 <label for="treasure" class="checkbox">treasure</label>
                 <input id="treasure" class="checkbox" type="checkbox">
             </p>
-            <input id="save" class="submit" type="submit" value="SAVE">
+            <input id="save1" class="submit" type="submit" value="SAVE">
         </fieldset>
     </section>
 
     <section id="write" class="toggle">
+        <h2>Diaries</h2>
         <fieldset>
-            <legend>Diaries</legend>
             <input type="date">
             <textarea id="diary" rows="19" required></textarea>
-            <input id="save" class="submit" type="submit" value="SAVE">
+            <input id="save2" class="submit" type="submit" value="SAVE">
         </fieldset>
     </section>
 
